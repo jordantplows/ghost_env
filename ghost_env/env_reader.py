@@ -100,3 +100,76 @@ def unwrap_env_vars(env_vars: Dict[str, str], signing_key: str) -> Dict[str, str
     
     return unwrapped
 
+
+def write_ghost_env_file(env_path: str, output_path: str, signing_key: str) -> int:
+    """
+    Convert a .env file to a ghost.env file with wrapped values.
+    Preserves comments and formatting from the original file.
+    
+    Args:
+        env_path: Path to the input .env file
+        output_path: Path to the output ghost.env file
+        signing_key: The secret key used to sign the JWTs
+    
+    Returns:
+        Number of variables wrapped
+    """
+    env_file = Path(env_path)
+    if not env_file.exists():
+        raise FileNotFoundError(f"Environment file not found: {env_path}")
+    
+    output_file = Path(output_path)
+    wrapped_count = 0
+    
+    # Read original file to preserve comments and formatting
+    with open(env_file, "r", encoding="utf-8") as infile:
+        lines = infile.readlines()
+    
+    # Read env vars to get wrapped values
+    env_vars = read_env_file(env_path)
+    wrapped_vars = wrap_env_file(env_vars, signing_key)
+    
+    # Write output file
+    with open(output_file, "w", encoding="utf-8") as outfile:
+        for line in lines:
+            original_line = line
+            line = line.strip()
+            
+            # Preserve empty lines and comments
+            if not line or line.startswith("#"):
+                outfile.write(original_line)
+                continue
+            
+            # Process KEY=VALUE lines
+            if "=" in line:
+                key, value = line.split("=", 1)
+                key = key.strip()
+                original_value = value.strip()
+                
+                # Remove quotes if present for comparison
+                unquoted_value = original_value
+                if unquoted_value.startswith('"') and unquoted_value.endswith('"'):
+                    unquoted_value = unquoted_value[1:-1]
+                elif unquoted_value.startswith("'") and unquoted_value.endswith("'"):
+                    unquoted_value = unquoted_value[1:-1]
+                
+                # Replace with wrapped value if it exists
+                if key in wrapped_vars:
+                    wrapped_value = wrapped_vars[key]
+                    # Preserve original quoting style if present
+                    if original_value.startswith('"') and original_value.endswith('"'):
+                        outfile.write(f'{key}="{wrapped_value}"\n')
+                    elif original_value.startswith("'") and original_value.endswith("'"):
+                        outfile.write(f"{key}='{wrapped_value}'\n")
+                    else:
+                        outfile.write(f"{key}={wrapped_value}\n")
+                    wrapped_count += 1
+                else:
+                    # Keep original line if key not found (shouldn't happen)
+                    outfile.write(original_line)
+            else:
+                # Keep lines that don't match KEY=VALUE format
+                outfile.write(original_line)
+    
+    return wrapped_count
+

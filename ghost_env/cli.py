@@ -7,7 +7,7 @@ from pathlib import Path
 from typing import Optional
 
 from ghost_env.config import ensure_signing_key, rotate_signing_key, get_config_path
-from ghost_env.env_reader import read_env_file, wrap_env_file, unwrap_env_vars
+from ghost_env.env_reader import read_env_file, wrap_env_file, unwrap_env_vars, write_ghost_env_file
 from ghost_env.jwt_wrapper import is_wrapped_token, unwrap_value
 
 
@@ -172,6 +172,26 @@ def cmd_unwrap(args: argparse.Namespace) -> int:
         return 1
 
 
+def cmd_convert(args: argparse.Namespace) -> int:
+    """Convert a .env file to a ghost.env file with wrapped values."""
+    signing_key = ensure_signing_key()
+    
+    input_file = args.input or ".env"
+    output_file = args.output or "ghost.env"
+    
+    try:
+        wrapped_count = write_ghost_env_file(input_file, output_file, signing_key)
+        print(f"✓ Converted {wrapped_count} environment variable(s)")
+        print(f"✓ Wrapped values written to: {output_file}")
+        return 0
+    except FileNotFoundError as e:
+        print(f"Error: {e}", file=sys.stderr)
+        return 1
+    except Exception as e:
+        print(f"Error: {e}", file=sys.stderr)
+        return 1
+
+
 def main() -> int:
     """Main CLI entry point."""
     parser = argparse.ArgumentParser(
@@ -201,6 +221,22 @@ def main() -> int:
     unwrap_parser = subparsers.add_parser("unwrap", help="Unwrap a JWT token")
     unwrap_parser.add_argument("token", nargs="?", help="The JWT token to unwrap")
     
+    # convert command
+    convert_parser = subparsers.add_parser(
+        "convert",
+        help="Convert .env file to ghost.env file with wrapped values"
+    )
+    convert_parser.add_argument(
+        "--input", "-i",
+        type=str,
+        help="Input .env file path (default: .env)"
+    )
+    convert_parser.add_argument(
+        "--output", "-o",
+        type=str,
+        help="Output ghost.env file path (default: ghost.env)"
+    )
+    
     args = parser.parse_args()
     
     if not args.command:
@@ -217,6 +253,8 @@ def main() -> int:
         return cmd_wrap(args)
     elif args.command == "unwrap":
         return cmd_unwrap(args)
+    elif args.command == "convert":
+        return cmd_convert(args)
     else:
         parser.print_help()
         return 1

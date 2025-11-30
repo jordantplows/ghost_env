@@ -84,6 +84,13 @@ ghost-env unwrap "gho_env.eyJhbGciOi..."
 ghost-env rotate
 ```
 
+**Convert .env to ghost.env:**
+```bash
+ghost-env convert
+# Or specify custom paths:
+ghost-env convert --input .env --output ghost.env
+```
+
 ### Python API
 
 ```python
