@@ -46,6 +46,8 @@ def cmd_serve(args: argparse.Namespace) -> int:
     # Wrap all values
     wrapped_vars = wrap_env_file(env_vars, signing_key)
     
+    verbose = args.verbose
+    
     class EnvHandler(BaseHTTPRequestHandler):
         def do_GET(self):
             """Handle GET requests for environment variables."""
@@ -98,7 +100,7 @@ def cmd_serve(args: argparse.Namespace) -> int:
         
         def log_message(self, format, *args):
             """Suppress default logging."""
-            if args.verbose:
+            if verbose:
                 super().log_message(format, *args)
     
     port = args.port
