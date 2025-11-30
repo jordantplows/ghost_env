@@ -22,7 +22,24 @@ SECRET_KEY=my-secret-key
 EOF
 ```
 
-### 3. Serve wrapped environment variables
+### 3. Convert .env to ghost.env
+
+Convert your `.env` file to `ghost.env` with wrapped values:
+
+```bash
+ghost-env convert
+```
+
+This creates a `ghost.env` file where all values are wrapped in JWT tokens. You can safely commit this file or share it with AI IDEs.
+
+The `ghost.env` file will look like:
+```
+API_KEY=gho_env.eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
+DATABASE_URL=gho_env.eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
+SECRET_KEY=gho_env.eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
+```
+
+### 4. Serve wrapped environment variables (Optional)
 
 Start the server:
 
@@ -45,7 +62,7 @@ You'll see output like:
 }
 ```
 
-### 4. Unwrap a token
+### 5. Unwrap a token
 
 ```bash
 # Get a token from the server

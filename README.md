@@ -41,13 +41,19 @@ pip install -e .
    ghost-env init
    ```
 
-2. Start your AI IDE with ghost_env enabled:
+2. Convert your `.env` file to `ghost.env` with wrapped values:
+
+   ```bash
+   ghost-env convert
+   ```
+
+   This creates a `ghost.env` file where all sensitive values are wrapped in JWT tokens. You can safely share this file with AI IDEs.
+
+3. (Optional) Start the HTTP server for programmatic access:
 
    ```bash
    ghost-env serve --port 8787
    ```
-
-3. Point the IDE at the localhost proxy. It will receive JWT-wrapped versions of your `.env` variables.
 
    The server exposes:
    - `GET /env.json` - Get all wrapped environment variables
@@ -117,18 +123,6 @@ wrapped_vars = wrap_env_file(env_vars, signing_key)
 - **Parsing values:** Your app or tooling continues to read from `process.env` / `os.environ` as usual. ghost_env performs the transparent unwrap before execution.
 - **Model visibility:** The AI agent only sees opaque tokens like `gho_env.eyJhbGciOi...` instead of the actual API key string.
 - **Revocation:** Rotate the signing secret with `ghost-env rotate` to invalidate previously issued tokens instantly.
-
-## Security posture
-
-- Local-only: No network calls leave your machine unless your code makes them.
-- Tamper-resistant: The JWT signature prevents the model from forging new environment values.
-- Audit-friendly: Optional logging lets you trace token issuance without recording plaintext secrets.
-
-## Roadmap
-
-- IDE plugins for popular AI pair-programming tools.
-- Pluggable encoders (e.g., TEE-backed, hardware security modules).
-- Policy rules to exclude or mask specific keys automatically.
 
 ## Contributing
 

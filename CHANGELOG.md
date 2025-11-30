@@ -10,7 +10,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added
 - Initial release
 - JWT-based wrapping and unwrapping of environment variables
-- CLI commands: `init`, `serve`, `wrap`, `unwrap`, `rotate`
+- CLI commands: `init`, `serve`, `wrap`, `unwrap`, `rotate`, `convert`
+- `convert` command to convert `.env` files to `ghost.env` files with wrapped values
 - Python API for programmatic usage
 - HTTP server for serving wrapped environment variables
 - Configuration management with secure key storage
